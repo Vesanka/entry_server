@@ -2,45 +2,45 @@ from http.server import (
     HTTPServer,
     BaseHTTPRequestHandler,
 )
+import json
 
-sqllist = ['1', '2', '3']
+sqllist = {}
 
-redislist = ['4', '5', '6']
+redislist = {}
+
 
 class RequestHandler(BaseHTTPRequestHandler):
+
     def do_GET(self):
 
-        if self.path.endswith('get_sqlite'):
+        self.send_response(200)
+        self.send_header('content-type', 'text/html')
+        self.end_headers()
+        output = ''
 
-            self.send_response(200)
-            self.send_header('content-type', 'text/html')
-            self.end_headers()
-            
-            output = ''
-            output += '<html><body>'
-            output += '<h1>Sql List</h1>'
-            for item in sqllist:
-                output += item
-                output += '</br>'
-            
-            output += '</body></html>'
+        if self.path.endswith('get_sqlite'):
+            for key, value in sqllist.items():
+                output += f'{key}: {value}\n'
             self.wfile.write(output.encode())
 
         if self.path.endswith('get_redis'):
-
-            self.send_response(200)
-            self.send_header('content-type', 'text/html')
-            self.end_headers()
-            
-            output = ''
-            output += '<html><body>'
-            output += '<h1>Redis List</h1>'
-            for item in redislist:
-                output += item
-                output += '</br>'
-            
-            output += '</body></html>'
+            for key, value in redislist.items():
+                output += f'{key}: {value}\n'
             self.wfile.write(output.encode())
+
+    def do_POST(self):
+        self.send_response(200)
+        self.send_header('content-type', 'text/html')
+        self.end_headers()
+
+        data_string = self.rfile.read(int(self.headers['Content-Length']))
+        data = json.loads(data_string)
+
+        if self.path.endswith('post_sqlite'):
+            sqllist.update(data)
+
+        if self.path.endswith('post_redis'):
+            redislist.update(data)
 
 
 def main():
@@ -48,7 +48,11 @@ def main():
     server_addres = ('localhost', PORT)
     server = HTTPServer(server_addres, RequestHandler)
     print(f'Server running on port {PORT}')
-    server.serve_forever()
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        pass
+
 
 if __name__ == '__main__':
     main()
