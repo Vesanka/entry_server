@@ -4,12 +4,20 @@ from http.server import (
 )
 import json
 
+from sqlite_classes import (
+    SqliteManager,
+)
+
+sql_manager = SqliteManager('test.db')
+
 sqllist = {}
 
 redislist = {}
 
 
 class RequestHandler(BaseHTTPRequestHandler):
+
+    global sql_manager
 
     def do_GET(self):
 
@@ -44,6 +52,9 @@ class RequestHandler(BaseHTTPRequestHandler):
 
 
 def main():
+    
+    sql_manager.do_create(table_name='testtable', name='TEXT', number='INTEGER')
+
     PORT = 9000
     server_addres = ('localhost', PORT)
     server = HTTPServer(server_addres, RequestHandler)
@@ -52,6 +63,8 @@ def main():
         server.serve_forever()
     except KeyboardInterrupt:
         pass
+
+    sql_manager.close()
 
 
 if __name__ == '__main__':
