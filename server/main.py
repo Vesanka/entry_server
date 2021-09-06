@@ -23,8 +23,6 @@ redislist = {}
 
 class RequestHandler(BaseHTTPRequestHandler):
 
-    global sql_manager
-
     def send_resp(self, response):
         self.send_response(response)
         self.send_header('content-type', 'text/html')
@@ -63,10 +61,10 @@ class RequestHandler(BaseHTTPRequestHandler):
                 sql_manager.do_insert(SQL_TABLE_NAME, data_string)
             except (json.JSONDecodeError, sqlite3.OperationalError) as err:
                 self.send_resp(400)
-                logger.error(code='400', headers=self.headers, error=err.__class__)
+                logger.error(code='400', path=self.path, headers=self.headers, error=err.__class__)
             else:
                 self.send_resp(200)
-                logger.info(code='200', headers=self.headers, body=data_string)
+                logger.info(code='200', path=self.path, headers=self.headers, body=data_string)
 
         elif self.path.endswith('post_redis'):
             try:
