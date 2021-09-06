@@ -11,12 +11,17 @@ from sqlite_classes import (
 from methods import (
     LogManager,
 )
+from redis_classes import (
+    RedisManager,
+)
 
 logger = LogManager('server/log.json')
 
 sql_manager = SqliteManager('test.db')
 
 SQL_TABLE_NAME = 'testtable'
+
+redis_manager = RedisManager('localhost', 6379, 0)
 
 redislist = {}
 
@@ -40,7 +45,8 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         elif self.path.endswith('get_redis'):
             self.send_resp(200)
-            for key, value in redislist.items():
+            re_data = redis_manager.do_get_all()
+            for key, value in re_data.items():
                 output += f'{key}: {value}\n'
             self.wfile.write(output.encode())
 
@@ -69,11 +75,15 @@ class RequestHandler(BaseHTTPRequestHandler):
         elif self.path.endswith('post_redis'):
             try:
                 data = json.loads(data_string)
-            except json.JSONDecodeError:
+                for key, value in data.items():
+                    redis_manager.do_set(key=key, value=value)
+            except json.JSONDecodeError as err:
                 self.send_resp(400)
+                logger.error(code='400', path=self.path, headers=self.headers, error=err.__class__)
             else:
                 self.send_resp(200)
-                redislist.update(data)
+                logger.info(code='200', path=self.path, headers=self.headers, body=data_string)
+                
 
         else:
             self.send_resp(404)
@@ -97,6 +107,7 @@ def main():
         pass
 
     sql_manager.close()
+    redis_manager.close()
 
 
 if __name__ == '__main__':
