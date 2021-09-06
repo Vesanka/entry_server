@@ -10,7 +10,7 @@ from sqlite_classes import (
 
 sql_manager = SqliteManager('test.db')
 
-sqllist = {}
+sql_table_name = 'testtable'
 
 redislist = {}
 
@@ -27,8 +27,8 @@ class RequestHandler(BaseHTTPRequestHandler):
         output = ''
 
         if self.path.endswith('get_sqlite'):
-            for key, value in sqllist.items():
-                output += f'{key}: {value}\n'
+            for value in sql_manager.do_select_all(sql_table_name):
+                output += str(value)
             self.wfile.write(output.encode())
 
         if self.path.endswith('get_redis'):
@@ -45,7 +45,8 @@ class RequestHandler(BaseHTTPRequestHandler):
         data = json.loads(data_string)
 
         if self.path.endswith('post_sqlite'):
-            sqllist.update(data)
+            sql_manager.do_insert(sql_table_name, data_string)
+
 
         if self.path.endswith('post_redis'):
             redislist.update(data)
@@ -53,7 +54,7 @@ class RequestHandler(BaseHTTPRequestHandler):
 
 def main():
     
-    sql_manager.do_create(table_name='testtable', name='TEXT', number='INTEGER')
+    sql_manager.do_create(table_name=sql_table_name, name='TEXT', number='INTEGER')
 
     PORT = 9000
     server_addres = ('localhost', PORT)

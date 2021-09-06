@@ -28,24 +28,26 @@ class SqliteManager():
 
         sql = sql[:-2] + ')'
         self.coursor.execute(sql)
+        self.db.commit()
 
     def do_select_all(self, table_name):
 
-        sql = f"""FROM {table_name} SELECT *"""
+        sql = f"""SELECT * FROM {table_name}"""
 
-        return self.coursor.execute(sql)
+        return self.coursor.execute(sql).fetchall()
 
     def do_insert(self, table_name, json_data):
         
-        sql = f"""INSERT INTO {table_name} VALUES ("""
+        sql = f"""INSERT INTO {table_name} ("""
 
         for key, _ in json.loads(json_data).items():
             sql += f'{key}, '
-        sql = sql[:-2] + ') ('
+        sql = sql[:-2] + ') VALUES('
 
         for _, value in json.loads(json_data).items():
             sql += f'{value}, '
         
-        sql = sql[:-2] + ')'
+        sql = sql[:-2] + ');'
 
         self.coursor.execute(sql)
+        self.db.commit()
