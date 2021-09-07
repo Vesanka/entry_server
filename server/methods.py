@@ -1,11 +1,12 @@
 import json
 import datetime
 
+
 class LogManager(object):
 
     def __init__(self, logfile_name):
         self.logfile_name = logfile_name
-    
+
     def info(self, code, path, headers, body):
         with open(self.logfile_name, 'a+') as file:
             data = {
@@ -17,7 +18,7 @@ class LogManager(object):
             }
             json.dump(data, file)
             file.write('\n')
-    
+
     def error(self, code, path, headers, error):
         with open(self.logfile_name, 'a+') as file:
             data = {

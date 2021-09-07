@@ -2,6 +2,7 @@ import json
 import sqlite3
 import os
 
+
 class SqliteManager():
 
     def __init__(self, db_name):
@@ -37,7 +38,7 @@ class SqliteManager():
         return self.coursor.execute(sql).fetchall()
 
     def do_insert(self, table_name, json_data):
-        
+
         sql = f"""INSERT INTO {table_name} ("""
 
         for key, _ in json.loads(json_data).items():
@@ -46,7 +47,7 @@ class SqliteManager():
 
         for _, value in json.loads(json_data).items():
             sql += f'{value}, '
-        
+
         sql = sql[:-2] + ');'
 
         self.coursor.execute(sql)
